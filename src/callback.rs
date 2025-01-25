@@ -40,7 +40,7 @@ pub(crate) unsafe fn register_callback<C, F, Manager>(
 ) -> CallbackHandle<Manager>
 where
     C: Callback,
-    F: FnMut(C) + Send + 'static,
+    F: FnMut(C) + 'static,
 {
     {
         let mut callbacks = inner.callbacks.lock().unwrap();
@@ -64,7 +64,7 @@ pub(crate) unsafe fn register_call_result<C, F, Manager>(
     _callback_id: i32,
     f: F,
 ) where
-    F: for<'a> FnOnce(&'a C, bool) + 'static + Send,
+    F: for<'a> FnOnce(&'a C, bool) + 'static,
 {
     let mut callbacks = inner.callbacks.lock().unwrap();
     callbacks.call_results.insert(

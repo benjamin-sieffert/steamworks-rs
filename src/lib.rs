@@ -97,8 +97,8 @@ struct Inner<Manager> {
 }
 
 struct Callbacks {
-    callbacks: HashMap<i32, Box<dyn FnMut(*mut c_void) + Send + 'static>>,
-    call_results: HashMap<sys::SteamAPICall_t, Box<dyn FnOnce(*mut c_void, bool) + Send + 'static>>,
+    callbacks: HashMap<i32, Box<dyn FnMut(*mut c_void) + 'static>>,
+    call_results: HashMap<sys::SteamAPICall_t, Box<dyn FnOnce(*mut c_void, bool) + 'static>>,
 }
 
 struct NetworkingSocketsData<Manager> {
