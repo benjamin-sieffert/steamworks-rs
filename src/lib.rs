@@ -43,6 +43,7 @@ mod app;
 mod callback;
 mod error;
 mod friends;
+pub mod http;
 mod input;
 mod matchmaking;
 mod matchmaking_servers;
