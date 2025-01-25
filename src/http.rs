@@ -75,7 +75,7 @@ impl<Manager> Http<Manager> {
             register_call_result::<sys::HTTPRequestCompleted_t, _, _>(
                 &self._inner,
                 api_call,
-                50,
+                HttpRequestCompleted::ID, // Not sure if correct, but is also unused by register_call_result body.
                 move |v, io_error| {
                     cb(if io_error {
                         Err(SteamError::IOFailure)
