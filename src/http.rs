@@ -62,7 +62,7 @@ impl<Manager> Http<Manager> {
 
     pub fn send_http_request<F>(&self, handle: HttpRequest, cb: F)
     where
-        F: FnOnce(Result<HttpRequestCompleted, SteamError>) + 'static + Send,
+        F: FnOnce(Result<HttpRequestResult, SteamError>) + 'static + Send,
     {
         unsafe {
             let mut api_call = 0;
@@ -72,20 +72,53 @@ impl<Manager> Http<Manager> {
                 return cb(Err(SteamError::InvalidParameter));
             }
 
+            let instance_handle = self.http;
+
             register_call_result::<sys::HTTPRequestCompleted_t, _, _>(
                 &self._inner,
                 api_call,
                 HttpRequestCompleted::ID, // Not sure if correct, but is also unused by register_call_result body.
                 move |v, io_error| {
-                    cb(if io_error {
-                        Err(SteamError::IOFailure)
-                    } else {
-                        Ok(v.into())
-                    })
+                    if io_error {
+                        return cb(Err(SteamError::IOFailure));
+                    }
+
+                    let r: HttpRequestCompleted = v.into();
+
+                    // succ=false means request failed without getting any response
+                    if !r.succ {
+                        return cb(Err(SteamError::Generic));
+                    }
+
+                    let mut body = Vec::with_capacity(r.body_size);
+                    if r.body_size > 0 {
+                        let ok = sys::SteamAPI_ISteamHTTP_GetHTTPResponseBodyData(
+                            instance_handle,
+                            r.local_handle,
+                            body.as_mut_slice().as_mut_ptr(),
+                            r.body_size as _,
+                        );
+
+                        if !ok {
+                            // Very unexpected, let’s just deliver the empty vec as body.
+                        }
+                    }
+
+                    cb(Ok(HttpRequestResult {
+                        body,
+                        status: r.status,
+                    }));
+
+                    sys::SteamAPI_ISteamHTTP_ReleaseHTTPRequest(instance_handle, handle.0);
                 },
             );
         }
     }
+}
+
+pub struct HttpRequestResult {
+    pub body: Vec<u8>,
+    pub status: usize,
 }
 
 pub struct HttpRequest(HTTPRequestHandle);
