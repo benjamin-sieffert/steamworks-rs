@@ -5,6 +5,7 @@ extern crate bitflags;
 #[macro_use]
 extern crate lazy_static;
 
+use http::Http;
 use screenshots::Screenshots;
 #[cfg(feature = "raw-bindings")]
 pub use steamworks_sys as sys;
@@ -313,6 +314,18 @@ where
             debug_assert!(!net.is_null());
             Networking {
                 net: net,
+                _inner: self.inner.clone(),
+            }
+        }
+    }
+
+    /// Returns an accessor to the steam http interface
+    pub fn http(&self) -> Http<Manager> {
+        unsafe {
+            let http = sys::SteamAPI_SteamHTTP_v003();
+            debug_assert!(!http.is_null());
+            Http {
+                http,
                 _inner: self.inner.clone(),
             }
         }
