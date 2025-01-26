@@ -116,6 +116,7 @@ impl<Manager> Http<Manager> {
     }
 }
 
+#[derive(Clone, Debug)]
 pub struct HttpRequestResult {
     pub body: Vec<u8>,
     pub status: usize,
