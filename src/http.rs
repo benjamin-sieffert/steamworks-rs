@@ -91,11 +91,11 @@ impl<Manager> Http<Manager> {
                     }
 
                     let mut bs: u32 = 0;
-                    sys::SteamAPI_ISteamHTTP_GetHTTPResponseBodySize(
+                    assert!(sys::SteamAPI_ISteamHTTP_GetHTTPResponseBodySize(
                         instance_handle,
                         r.local_handle,
                         &mut bs,
-                    );
+                    ));
                     let body_size = r.body_size.max(bs as usize);
 
                     let mut body = Vec::with_capacity(body_size);
@@ -104,7 +104,7 @@ impl<Manager> Http<Manager> {
                             instance_handle,
                             r.local_handle,
                             body.as_mut_slice().as_mut_ptr(),
-                            r.body_size as _,
+                            body_size as _,
                         );
 
                         if !ok {
