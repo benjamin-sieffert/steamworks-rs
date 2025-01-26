@@ -90,8 +90,16 @@ impl<Manager> Http<Manager> {
                         return cb(Err(SteamError::Generic));
                     }
 
-                    let mut body = Vec::with_capacity(r.body_size);
-                    if r.body_size > 0 {
+                    let mut bs: u32 = 0;
+                    sys::SteamAPI_ISteamHTTP_GetHTTPResponseBodySize(
+                        instance_handle,
+                        r.local_handle,
+                        &mut bs,
+                    );
+                    let body_size = r.body_size.max(bs as usize);
+
+                    let mut body = Vec::with_capacity(body_size);
+                    if body_size > 0 {
                         let ok = sys::SteamAPI_ISteamHTTP_GetHTTPResponseBodyData(
                             instance_handle,
                             r.local_handle,
@@ -101,7 +109,6 @@ impl<Manager> Http<Manager> {
 
                         if !ok {
                             // Very unexpected, let’s just deliver the empty vec as body.
-                            return cb(Err(SteamError::Generic));
                         }
                     }
 
