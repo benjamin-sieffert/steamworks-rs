@@ -84,20 +84,13 @@ impl<Manager> Http<Manager> {
                     }
 
                     let r: HttpRequestCompleted = v.into();
-                    println!("cr: {r:?} of {}", handle.0);
 
                     // succ=false means request failed without getting any response
                     if !r.succ {
                         return cb(Err(SteamError::Generic));
                     }
 
-                    let mut bs: u32 = 0;
-                    assert!(sys::SteamAPI_ISteamHTTP_GetHTTPResponseBodySize(
-                        instance_handle,
-                        r.local_handle,
-                        &mut bs,
-                    ));
-                    let body_size = r.body_size.max(bs as usize);
+                    let body_size = r.body_size;
 
                     let mut body = Vec::with_capacity(body_size);
                     if body_size > 0 {
@@ -107,9 +100,10 @@ impl<Manager> Http<Manager> {
                             body.as_mut_slice().as_mut_ptr(),
                             body_size as _,
                         );
-                        assert!(ok);
 
-                        if !ok {
+                        if ok {
+                            body.set_len(body_size);
+                        } else {
                             // Very unexpected, let’s just deliver the empty vec as body.
                         }
                     }
