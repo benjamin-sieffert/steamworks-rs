@@ -84,6 +84,7 @@ impl<Manager> Http<Manager> {
                     }
 
                     let r: HttpRequestCompleted = v.into();
+                    println!("cr: {r:?} of {}", handle.0);
 
                     // succ=false means request failed without getting any response
                     if !r.succ {
@@ -106,6 +107,7 @@ impl<Manager> Http<Manager> {
                             body.as_mut_slice().as_mut_ptr(),
                             body_size as _,
                         );
+                        assert!(ok);
 
                         if !ok {
                             // Very unexpected, let’s just deliver the empty vec as body.
@@ -117,7 +119,7 @@ impl<Manager> Http<Manager> {
                         status: r.status,
                     }));
 
-                    sys::SteamAPI_ISteamHTTP_ReleaseHTTPRequest(instance_handle, handle.0);
+                    sys::SteamAPI_ISteamHTTP_ReleaseHTTPRequest(instance_handle, r.local_handle);
                 },
             );
         }
@@ -132,6 +134,7 @@ pub struct HttpRequestResult {
 
 pub struct HttpRequest(HTTPRequestHandle);
 
+#[derive(Debug)]
 struct HttpRequestCompleted {
     pub local_handle: HTTPRequestHandle,
     pub succ: bool,
