@@ -101,6 +101,7 @@ impl<Manager> Http<Manager> {
 
                         if !ok {
                             // Very unexpected, let’s just deliver the empty vec as body.
+                            return cb(Err(SteamError::Generic));
                         }
                     }
 
