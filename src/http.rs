@@ -39,9 +39,28 @@ impl<Manager> Http<Manager> {
         content_type: &'static str,
         body: &mut [u8],
     ) -> Result<HttpRequest, SteamError> {
+        self.create_request_with_body(EHTTPMethod::k_EHTTPMethodPOST, url, content_type, body)
+    }
+
+    pub fn create_put_request(
+        &self,
+        url: &str,
+        content_type: &'static str,
+        body: &mut [u8],
+    ) -> Result<HttpRequest, SteamError> {
+        self.create_request_with_body(EHTTPMethod::k_EHTTPMethodPUT, url, content_type, body)
+    }
+
+    pub fn create_request_with_body(
+        &self,
+        method: EHTTPMethod,
+        url: &str,
+        content_type: &'static str,
+        body: &mut [u8],
+    ) -> Result<HttpRequest, SteamError> {
         let c_cnt = CString::new(content_type).map_err(|_| SteamError::InvalidParameter)?;
 
-        let r = self.create_http_request(EHTTPMethod::k_EHTTPMethodPOST, url)?;
+        let r = self.create_http_request(method, url)?;
 
         unsafe {
             let succ = sys::SteamAPI_ISteamHTTP_SetHTTPRequestRawPostBody(
